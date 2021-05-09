@@ -10,5 +10,4 @@ javac *.java
 sleep 2
 
 echo
-echo "Lanzando Replicas"
-java -cp . -Djava.rmi.server.codebase=file:./ -Djava.rmi.server.hostname=localhost -Djava.security.policy=server.policy MSF
+java -cp . -Djava.rmi.server.codebase=file:./ -Djava.rmi.server.hostname=localhost -Djava.security.policy=server.policy MSF 4

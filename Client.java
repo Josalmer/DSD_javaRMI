@@ -13,8 +13,12 @@ El cliente es el encargado de almacenar el estado del usuario, si se encuentra r
 public class Client {
 
     public static void main(String args[]) {
+        if (args.length != 1) {
+            System.out.println("Ejecución Client <numero_de_replicas>");
+            return;
+        }
+        int replicasCount = Integer.parseInt(args[0]);
         Random rand = new Random();
-        int replicasCount = 1;
         int myReplicaId = rand.nextInt(replicasCount - 0);
         String entityName = "";
 
@@ -25,6 +29,7 @@ public class Client {
         try {
             Registry registry = LocateRegistry.getRegistry();
             ClientInterface myReplica = (ClientInterface) registry.lookup(Integer.toString(myReplicaId));
+            System.out.println("Le atiende la replica: " + myReplicaId);
             Scanner in = new Scanner(System.in);
             while (true) {
                 String action = userMenu(in, entityName);
@@ -34,15 +39,15 @@ public class Client {
                         System.out.println("Introduzca el nombre de la entidad que quiere registrar: ");
                         newEntityName = in.nextLine();
                         if (myReplica.register(newEntityName)) {
-                            System.out.println(newEntityName + " registrada correctamente\n");
+                            System.out.println(newEntityName + " registrada correctamente");
                         }
                         else
-                            System.out.println("Error: La entidad ya estaba registrada\n");
+                            System.out.println("Error: La entidad ya estaba registrada");
                         break;
                     case "d":
                         break;
                     default:
-                        System.out.println("No se ejecuta acción.\n");
+                        System.out.println("No se ejecuta acción.");
                 }
             }
         } catch (Exception e) {
@@ -55,12 +60,12 @@ public class Client {
         ArrayList<String> allowedActions = new ArrayList<>();
         
         if (entityName != "") {
-            System.out.println("Usted esta registrado con la entidad " + entityName + "\n");
-            System.out.println("Indique que acción quiere realizar:\nd - realizar Donación\n");
+            System.out.println("Usted esta registrado con la entidad " + entityName);
+            System.out.println("Indique que acción quiere realizar:\nd - realizar Donación");
             allowedActions.add("d");
         } else {
             System.out.println("Usted no esta esta registrado\n");
-            System.out.println("Indique que acción quiere realizar:\nr - Registrar entidad\n");
+            System.out.println("Indique que acción quiere realizar:\nr - Registrar entidad");
             allowedActions.add("r");
         }
         String action = "";
@@ -70,7 +75,7 @@ public class Client {
         if (allowedActions.contains(action)) {
             return action;
         } else {
-            System.out.println("Acción elegida no permitida o no existe.\n");
+            System.out.println("Acción elegida no permitida o no existe.");
             return "";
         }
     }

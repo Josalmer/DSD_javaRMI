@@ -12,26 +12,32 @@ Clase que implementa los métodos que ejecutaran las replicas del servicio de do
 
 public class Server implements ServerInterface, ClientInterface {
     int id;
+    int replicasCount;
     ArrayList<Donation> donations;
     ArrayList<String> entities;
-    ServerInterface nextServer;
+    ArrayList<ServerInterface> replicas;
     Registry registry;
 
     String host;
     int port;
 
-    public Server(int id, String host, int port) {
+    public Server(int id, int replicasCount, String host, int port) {
         this.id = id;
+        this.replicasCount = replicasCount;
         this.host = host;
         this.port = port;
     
         this.donations = new ArrayList<>();
         this.entities = new ArrayList<>();
+        this.replicas = new ArrayList<>();
     }
 
-    public void setNextServer(int nextServerId) {
+    public void setReplicas() {
         try {
-            this.nextServer = (ServerInterface) this.registry.lookup(Integer.toString(nextServerId));
+            for (int i = 0; i < this.replicasCount; i++) {
+                ServerInterface replica = (ServerInterface) this.registry.lookup(Integer.toString(i));
+                this.replicas.add(replica);
+            }
         } catch (Exception e) {
             //TODO: handle exception
         }
@@ -61,6 +67,7 @@ public class Server implements ServerInterface, ClientInterface {
             return true;
         } else {
             try {
+                for (int i = 0; i < )
                 return false;
             } catch (Exception e) {
                 //TODO: handle exception
