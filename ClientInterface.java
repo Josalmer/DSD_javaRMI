@@ -16,7 +16,9 @@ Adicionalmente podrán consultar:
 
 public interface ClientInterface extends Remote {
 
-    public boolean register(String entityName) throws RemoteException; // 1. registrarse (como entidad cliente)
+    // 1. registrarse (como entidad cliente)
+    // Devuelve el identificador de la replica donde se ha registrado
+    public int register(String entityName) throws RemoteException;
 
     // public boolean donate(String entityName, int amount) throws RemoteException; // 2. donar
 

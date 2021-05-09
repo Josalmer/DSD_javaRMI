@@ -62,18 +62,38 @@ public class Server implements ServerInterface, ClientInterface {
     // Peticiones de clientes -----------------------------------------------------------------------------------------
 
     @Override
-    public boolean register(String entityName) {
-        if (localEntity(entityName)) {
-            return true;
-        } else {
-            try {
-                for (int i = 0; i < )
-                return false;
-            } catch (Exception e) {
-                //TODO: handle exception
+    public int register(String entityName) {
+        try {
+            int replicaId = 0;
+            boolean registered = false;
+            while (replicaId < this.replicasCount && !registered) {
+                registered = this.replicas.get(replicaId).localEntity(entityName);
+                if (!registered) {
+                    replicaId++;
+                }
             }
+
+            if (registered) { // ya esta registrado
+                System.out.println(this.id + ": Entidad " + entityName + " ya registrada en replica " + replicaId);
+                return replicaId;
+            } else { // hay que registrarlo
+                int min = 99999;
+                int idMin = -1;
+                for (int i = 0; i < this.replicasCount; i++) {
+                    int entitiesAtReplica = this.replicas.get(i).localEntities();
+                    if (entitiesAtReplica < min) {
+                        min = entitiesAtReplica;
+                        idMin = i;
+                    }
+                }
+                this.replicas.get(idMin).registerEntity(entityName);
+                System.out.println(this.id + ": Nuevo registro de Entidad " + entityName + " en replica " + idMin);
+                return idMin;
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
         }
-        return false;
+        return -1;
     }
 
     // Fin peticiones de clientes -------------------------------------------------------------------------------------
@@ -82,7 +102,17 @@ public class Server implements ServerInterface, ClientInterface {
 
     @Override
     public boolean localEntity(String entityName) {
-        return this.donations.stream().filter(donation -> entityName.equals(donation.getEntity())).count() > 0;
+        return this.entities.stream().filter(entity -> entityName.equals(entity)).count() > 0;
+    }
+
+    @Override
+    public int localEntities() {
+        return this.entities.size();
+    }
+
+    @Override
+    public void registerEntity(String entityName) {
+        this.entities.add(entityName);
     }
 
     // Fin peticiones de server ---------------------------------------------------------------------------------------

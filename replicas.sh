@@ -1,4 +1,5 @@
 #!/bin/sh -e
+# sudo netstat -putona | grep rmi
 echo
 echo "Lanzando el ligador de RMI... "
 rmiregistry &

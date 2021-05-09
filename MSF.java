@@ -15,7 +15,7 @@ public class MSF {
         replicas = new ArrayList<>();
         System.out.println("Inicialización de " + replicasCount + " replicas");
         for (int i = 0; i < replicasCount; i++) {
-            Server newReplica = new Server(i, "localhost", 1099);
+            Server newReplica = new Server(i, replicasCount, "localhost", 1099);
             newReplica.init();
             replicas.add(newReplica);
         }
