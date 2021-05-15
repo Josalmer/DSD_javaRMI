@@ -1,5 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 /* 
 Author: Jose Saldaña Mercado
@@ -24,10 +25,10 @@ public interface ClientInterface extends Remote {
 
     public int totalAmount() throws RemoteException; // 3. consultar total donado
 
-    // public int amountBYEntity(String entityName) throws RemoteException; // 4. consultar cantidad donada por una entidad identificado por nombre
+    public int amountBYEntity(String entityName) throws RemoteException; // 4. consultar cantidad donada por una entidad identificado por nombre
 
-    // public int totalEntities() throws RemoteException; // 5. consultar número total de entidades registradas
+    public int totalEntities() throws RemoteException; // 5. consultar número total de entidades registradas
 
-    // public String[] getEntities() throws RemoteException; // 6. consultar nombre de todos las entidades registradas
+    public ArrayList<String> getEntities() throws RemoteException; // 6. consultar nombre de todos las entidades registradas
     
 }

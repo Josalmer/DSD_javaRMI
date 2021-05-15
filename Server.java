@@ -146,6 +146,53 @@ public class Server implements ServerInterface, ClientInterface {
         return total;
     }
 
+    @Override
+    public int amountBYEntity(String entityName) {
+        int amount = 0;
+        try {
+            int replicaId = 0;
+            boolean registered = false;
+            while (replicaId < this.replicasCount && !registered) {
+                registered = this.replicas.get(replicaId).localEntity(entityName);
+                if (!registered) {
+                    replicaId++;
+                }
+            }
+            if (registered) {
+                amount = this.replicas.get(replicaId).amountBy(entityName);
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+        return amount;
+    }
+
+    @Override
+    public int totalEntities() {
+        int entities = 0;
+        try {
+            for (int i = 0; i < this.replicasCount; i++) {
+                entities += this.replicas.get(i).localEntities();
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+        return entities;
+    }
+
+    @Override
+    public ArrayList<String> getEntities() {
+        ArrayList<String> names = new ArrayList<>();
+        try {
+            for (int i = 0; i < this.replicasCount; i++) {
+                names.addAll(this.replicas.get(i).entitiesNames());
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+        return names;
+    }
+
     // Fin peticiones de clientes -------------------------------------------------------------------------------------
 
     // Peticiones de server -------------------------------------------------------------------------------------------
@@ -165,6 +212,27 @@ public class Server implements ServerInterface, ClientInterface {
         this.entities.add(entityName);
         Donation nueva = new Donation(entityName);
         this.donations.add(nueva);
+    }
+
+    @Override
+    public int amountBy(String entityName) {
+        Donation don = null;
+        Donation prov = null;
+        int i = 0;
+        while (don == null) {
+            prov = this.donations.get(i);
+            if (entityName.equals(prov.getEntity())) {
+                don = prov;
+            } else {
+                i++;
+            }
+        }
+        return don.getDonated();
+    }
+
+    @Override
+    public ArrayList<String> entitiesNames() {
+        return this.entities;
     }
 
     @Override

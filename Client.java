@@ -55,6 +55,15 @@ public class Client {
                     case "t":
                         client.totalAmount(client);
                         break;
+                    case "p":
+                        client.amountBy(client);
+                        break;
+                    case "n":
+                        client.number(client);
+                        break;
+                    case "e":
+                        client.names(client);
+                        break;
                     case "l":
                         client.entityName = "";
                         break;
@@ -77,9 +86,12 @@ public class Client {
         
         if (entityName != "") {
             System.out.println("\nUsted esta registrado con la entidad " + entityName);
-            System.out.println("Indique que acción quiere realizar:\nd - realizar (D)onación\nt - consultar (T)otal donado\nl - (L)ogout de entidad: " + entityName + "\nx - e(X)it");
+            System.out.println("Indique que acción quiere realizar:\nd - realizar (D)onación\nt - consultar (T)otal donado\np - consultar cantidad donada (P)or entidad\nn - consultar (N)umero de entidades registradas\ne - consultar nombres de todas las (E)ntidades registradas\nl - (L)ogout de entidad: " + entityName + "\nx - e(X)it");
             allowedActions.add("d");
             allowedActions.add("t");
+            allowedActions.add("p");
+            allowedActions.add("n");
+            allowedActions.add("e");
             allowedActions.add("l");
         } else {
             System.out.println("\nUsted no esta esta registrado");
@@ -138,6 +150,38 @@ public class Client {
         try {
             int total = client.myReplica.totalAmount();
             System.out.println("Total donado a MSF: " + total);
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+
+    void amountBy(Client client) {
+        try {
+            System.out.println("Introduzca el nombre de la entidad a consultar: ");
+            String queryEntityName = client.in.nextLine();
+            int donado = client.myReplica.amountBYEntity(queryEntityName);
+            System.out.println("La entidad " + queryEntityName + " ha donado " + donado + " €");
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+
+    void number(Client client) {
+        try {
+            int number = client.myReplica.totalEntities();
+            System.out.println("Hay registradas " + number + " entidades");
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+
+    void names(Client client) {
+        try {
+            ArrayList<String> names = client.myReplica.getEntities();
+            System.out.println("Las entidades registradas son: ");
+            for (int i = 0; i < names.size();i++) { 		      
+                System.out.println(names.get(i) + " "); 		
+            }   
         } catch (Exception e) {
             //TODO: handle exception
         }

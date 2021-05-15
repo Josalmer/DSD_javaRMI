@@ -1,5 +1,6 @@
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 /* 
 Author: Jose Saldaña Mercado
@@ -15,6 +16,10 @@ public interface ServerInterface extends Remote {
     public int localEntities() throws RemoteException; // indica nº de entidades registradas
 
     public void registerEntity(String entityName) throws RemoteException; // registra la entidad en la replica
+
+    public int amountBy(String entityName) throws RemoteException; // consulta cantidad donada por una entidad identificado por nombre
+
+    public ArrayList<String> entitiesNames() throws RemoteException; // consulta los nombres de las entidades registradas
     
     public void passToken() throws RemoteException; // pasa el token a la siguiente replica
 }
