@@ -16,7 +16,7 @@ public class Server implements ServerInterface, ClientInterface {
     ArrayList<Donation> donations;
     ArrayList<String> entities;
     ArrayList<ServerInterface> replicas;
-    MSFInterface MSF;
+    TotalDonationInterface msfTotal;
     Registry registry;
     int pendingAmount;
     boolean haveToken;
@@ -33,6 +33,12 @@ public class Server implements ServerInterface, ClientInterface {
         this.donations = new ArrayList<>();
         this.entities = new ArrayList<>();
         this.replicas = new ArrayList<>();
+
+        try {
+            this.registry = LocateRegistry.getRegistry(host, port);
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
     }
 
     public void setReplicas() {
@@ -56,12 +62,12 @@ public class Server implements ServerInterface, ClientInterface {
             String remoteObjectName = Integer.toString(this.id);
             ServerInterface replica = this;
             ServerInterface stub = (ServerInterface) UnicastRemoteObject.exportObject(replica, 0);
-            this.registry = LocateRegistry.getRegistry(host, port);
             this.registry.rebind(remoteObjectName, stub);
-            this.MSF = (MSFInterface) this.registry.lookup("MSF");
+            this.msfTotal = (TotalDonationInterface) this.registry.lookup("msfTotal");
             System.out.println("Replica " + this.id + " ready");
         } catch (Exception e) {
             //TODO: handle exception
+            System.out.println("Error initializing replica: " + e);
         }
     }
 
@@ -103,7 +109,7 @@ public class Server implements ServerInterface, ClientInterface {
     }
 
     @Override
-    public boolean donate(String entityName, int amount) {
+    public void donate(String entityName, int amount) {
         Donation don = null;
         Donation prov = null;
         int i = 0;
@@ -117,15 +123,27 @@ public class Server implements ServerInterface, ClientInterface {
         }
         don.addDonation(amount);
         this.pendingAmount += amount;
+        System.out.println(this.id + ": Recibo " + amount + " € de " + entityName);
         if (this.haveToken) {
             try {
-                this.MSF.addDonation(this.pendingAmount);
+                this.msfTotal.addDonation(this.id, this.pendingAmount);
+                System.out.println(this.id + ": Actualizo donación total, sumo: " + this.pendingAmount);
                 this.pendingAmount = 0;
             } catch (Exception e) {
                 //TODO: handle exception
             }
         }
-        return true;
+    }
+
+    @Override
+    public int totalAmount() {
+        int total = 0;
+        try {
+            total = this.pendingAmount + this.msfTotal.totalAmount();
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+        return total;
     }
 
     // Fin peticiones de clientes -------------------------------------------------------------------------------------
@@ -145,6 +163,8 @@ public class Server implements ServerInterface, ClientInterface {
     @Override
     public void registerEntity(String entityName) {
         this.entities.add(entityName);
+        Donation nueva = new Donation(entityName);
+        this.donations.add(nueva);
     }
 
     @Override
@@ -152,10 +172,11 @@ public class Server implements ServerInterface, ClientInterface {
         try {
             this.haveToken = true;
             if (this.pendingAmount > 0) {
-                this.MSF.addDonation(this.pendingAmount);
+                this.msfTotal.addDonation(this.id, this.pendingAmount);
+                System.out.println(this.id + ": Actualizo donación total, sumo: " + this.pendingAmount);
                 this.pendingAmount = 0;
             }
-            Thread.sleep(4000);
+            Thread.sleep(2000);
             int nextReplica = (this.id + 1) % this.replicasCount;
             System.out.println(this.id + ": Paso el token a replica " + nextReplica);
             this.haveToken = false;

@@ -1,31 +1,29 @@
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
-import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.NotBoundException;
-import java.rmi.RemoteException;
-import java.rmi.server.UnicastRemoteObject;
+import java.rmi.registry.LocateRegistry;
 
 /* 
 Author: Jose Saldaña Mercado
 Clase que lanza las distintas replicas del servicio de donaciones de Médicos sin Fronteras
 */
 
-public class MSF implements MSFInterface {
+public class MSF {
 
     static int replicasCount;
     static ArrayList<Server> replicas;
-    int totalAmount;
+    int port = 1099;
     Registry registry;
 
     MSF() {
-        this.totalAmount = 0;
         try {
-            this.registry = LocateRegistry.createRegistry(1099);
+            this.registry = LocateRegistry.createRegistry(this.port);
+            TotalDonation msfTotal = new TotalDonation("localhost", this.port);
+            System.out.println("Inicialización del acumulador de donaciones");
             replicas = new ArrayList<>();
             System.out.println("Inicialización de " + replicasCount + " replicas");
             for (int i = 0; i < replicasCount; i++) {
-                Server newReplica = new Server(i, replicasCount, "localhost", 1099);
+                Server newReplica = new Server(i, replicasCount, "localhost", this.port);
                 newReplica.init();
                 replicas.add(newReplica);
             }
@@ -42,36 +40,19 @@ public class MSF implements MSFInterface {
         replicasCount = Integer.parseInt(args[0]);
         MSF msf = new MSF();
         try {
-            String remoteObjectName = "MSF";
-            MSFInterface msfInterface = msf;
-            MSFInterface stub = (MSFInterface) UnicastRemoteObject.exportObject(msfInterface, 0);
-            msf.registry.rebind(remoteObjectName, stub);
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(1);
             System.out.println("Construcción del anillo");
             for (int i = 0; i < replicasCount; i++) {
                 Server replica = replicas.get(i);
                 replica.setReplicas();
             }
             System.out.println("Anillo establecido");
-            TimeUnit.SECONDS.sleep(2);
+            TimeUnit.SECONDS.sleep(1);
             System.out.println("MSF comienza a circular el token, se lo manda a replica 0");
             replicas.get(0).passToken();
         } catch (Exception e) {
             //TODO: handle exception
+            System.out.println("Error register MSF: " + e);
         }
     }
-
-    // Gestion del total de donaciones ----------------------------------------------------------------------------------------
-
-    @Override
-    public void addDonation(int amount) {
-        this.totalAmount += amount;
-    }
-
-    @Override
-    public int totalAmount() {
-        return this.totalAmount;
-    }
-
-    // Fin Gestion del total de donaciones ------------------------------------------------------------------------------------
 }

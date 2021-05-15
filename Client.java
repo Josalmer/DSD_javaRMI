@@ -50,6 +50,10 @@ public class Client {
                         client.registerEntity(client);
                         break;
                     case "d":
+                        client.donate(client);
+                        break;
+                    case "t":
+                        client.totalAmount(client);
                         break;
                     case "l":
                         client.entityName = "";
@@ -73,8 +77,9 @@ public class Client {
         
         if (entityName != "") {
             System.out.println("\nUsted esta registrado con la entidad " + entityName);
-            System.out.println("Indique que acción quiere realizar:\nd - realizar (D)onación\nl - (L)ogout de entidad: " + entityName + "\nx - e(X)it");
+            System.out.println("Indique que acción quiere realizar:\nd - realizar (D)onación\nt - consultar (T)otal donado\nl - (L)ogout de entidad: " + entityName + "\nx - e(X)it");
             allowedActions.add("d");
+            allowedActions.add("t");
             allowedActions.add("l");
         } else {
             System.out.println("\nUsted no esta esta registrado");
@@ -113,6 +118,26 @@ public class Client {
                 client.setReplica(client, replicaAsignada);
                 System.out.println("Ahora le atiende la replica " + replicaAsignada);
             }
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+
+    void donate(Client client) {
+        try {
+            System.out.println("Introduzca la cantidad que quiere donar: ");
+            String stringDonation = client.in.nextLine();
+            client.myReplica.donate(client.entityName, Integer.parseInt(stringDonation));
+            System.out.println(stringDonation + " donados correctamente");
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
+    }
+
+    void totalAmount(Client client) {
+        try {
+            int total = client.myReplica.totalAmount();
+            System.out.println("Total donado a MSF: " + total);
         } catch (Exception e) {
             //TODO: handle exception
         }
