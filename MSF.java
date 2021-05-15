@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 
 /* 
 Author: Jose Saldaña Mercado
@@ -12,12 +14,17 @@ public class MSF {
     static ArrayList<Server> replicas;
 
     MSF() {
-        replicas = new ArrayList<>();
-        System.out.println("Inicialización de " + replicasCount + " replicas");
-        for (int i = 0; i < replicasCount; i++) {
-            Server newReplica = new Server(i, replicasCount, "localhost", 1099);
-            newReplica.init();
-            replicas.add(newReplica);
+        try {
+            Registry reg = LocateRegistry.createRegistry(1099);
+            replicas = new ArrayList<>();
+            System.out.println("Inicialización de " + replicasCount + " replicas");
+            for (int i = 0; i < replicasCount; i++) {
+                Server newReplica = new Server(i, replicasCount, "localhost", 1099);
+                newReplica.init();
+                replicas.add(newReplica);
+            }
+        } catch (Exception e) {
+            //TODO: handle exception
         }
     }
 

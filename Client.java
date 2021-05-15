@@ -36,7 +36,7 @@ public class Client {
             System.setSecurityManager(new SecurityManager());
         }
         try {
-            client.registry = LocateRegistry.getRegistry();
+            client.registry = LocateRegistry.getRegistry("localhost", 1099);
     
             Random rand = new Random();
             client.setReplica(client, rand.nextInt(replicasCount - 0));
