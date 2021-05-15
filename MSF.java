@@ -2,20 +2,26 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 /* 
 Author: Jose Saldaña Mercado
 Clase que lanza las distintas replicas del servicio de donaciones de Médicos sin Fronteras
 */
 
-public class MSF {
+public class MSF implements MSFInterface {
 
     static int replicasCount;
     static ArrayList<Server> replicas;
+    int totalAmount;
+    Registry registry;
 
     MSF() {
+        this.totalAmount = 0;
         try {
-            Registry reg = LocateRegistry.createRegistry(1099);
+            this.registry = LocateRegistry.createRegistry(1099);
             replicas = new ArrayList<>();
             System.out.println("Inicialización de " + replicasCount + " replicas");
             for (int i = 0; i < replicasCount; i++) {
@@ -36,6 +42,10 @@ public class MSF {
         replicasCount = Integer.parseInt(args[0]);
         MSF msf = new MSF();
         try {
+            String remoteObjectName = "MSF";
+            MSFInterface msfInterface = msf;
+            MSFInterface stub = (MSFInterface) UnicastRemoteObject.exportObject(msfInterface, 0);
+            msf.registry.rebind(remoteObjectName, stub);
             TimeUnit.SECONDS.sleep(2);
             System.out.println("Construcción del anillo");
             for (int i = 0; i < replicasCount; i++) {
@@ -43,8 +53,25 @@ public class MSF {
                 replica.setReplicas();
             }
             System.out.println("Anillo establecido");
+            TimeUnit.SECONDS.sleep(2);
+            System.out.println("MSF comienza a circular el token, se lo manda a replica 0");
+            replicas.get(0).passToken();
         } catch (Exception e) {
             //TODO: handle exception
         }
     }
+
+    // Gestion del total de donaciones ----------------------------------------------------------------------------------------
+
+    @Override
+    public void addDonation(int amount) {
+        this.totalAmount += amount;
+    }
+
+    @Override
+    public int totalAmount() {
+        return this.totalAmount;
+    }
+
+    // Fin Gestion del total de donaciones ------------------------------------------------------------------------------------
 }

@@ -20,7 +20,7 @@ public interface ClientInterface extends Remote {
     // Devuelve el identificador de la replica donde se ha registrado
     public int register(String entityName) throws RemoteException;
 
-    // public boolean donate(String entityName, int amount) throws RemoteException; // 2. donar
+    public boolean donate(String entityName, int amount) throws RemoteException; // 2. donar
 
     // public int totalAmount() throws RemoteException; // 3. consultar total donado
 

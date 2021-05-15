@@ -16,4 +16,5 @@ public interface ServerInterface extends Remote {
 
     public void registerEntity(String entityName) throws RemoteException; // registra la entidad en la replica
     
+    public void passToken() throws RemoteException; // pasa el token a la siguiente replica
 }

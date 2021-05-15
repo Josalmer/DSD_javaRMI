@@ -16,7 +16,10 @@ public class Server implements ServerInterface, ClientInterface {
     ArrayList<Donation> donations;
     ArrayList<String> entities;
     ArrayList<ServerInterface> replicas;
+    MSFInterface MSF;
     Registry registry;
+    int pendingAmount;
+    boolean haveToken;
 
     String host;
     int port;
@@ -44,6 +47,8 @@ public class Server implements ServerInterface, ClientInterface {
     }
 
     public void init() {
+        this.pendingAmount = 0;
+        this.haveToken = false;
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
         }
@@ -53,6 +58,7 @@ public class Server implements ServerInterface, ClientInterface {
             ServerInterface stub = (ServerInterface) UnicastRemoteObject.exportObject(replica, 0);
             this.registry = LocateRegistry.getRegistry(host, port);
             this.registry.rebind(remoteObjectName, stub);
+            this.MSF = (MSFInterface) this.registry.lookup("MSF");
             System.out.println("Replica " + this.id + " ready");
         } catch (Exception e) {
             //TODO: handle exception
@@ -96,6 +102,32 @@ public class Server implements ServerInterface, ClientInterface {
         return -1;
     }
 
+    @Override
+    public boolean donate(String entityName, int amount) {
+        Donation don = null;
+        Donation prov = null;
+        int i = 0;
+        while (don == null) {
+            prov = this.donations.get(i);
+            if (entityName.equals(prov.getEntity())) {
+                don = prov;
+            } else {
+                i++;
+            }
+        }
+        don.addDonation(amount);
+        this.pendingAmount += amount;
+        if (this.haveToken) {
+            try {
+                this.MSF.addDonation(this.pendingAmount);
+                this.pendingAmount = 0;
+            } catch (Exception e) {
+                //TODO: handle exception
+            }
+        }
+        return true;
+    }
+
     // Fin peticiones de clientes -------------------------------------------------------------------------------------
 
     // Peticiones de server -------------------------------------------------------------------------------------------
@@ -113,6 +145,24 @@ public class Server implements ServerInterface, ClientInterface {
     @Override
     public void registerEntity(String entityName) {
         this.entities.add(entityName);
+    }
+
+    @Override
+    public void passToken() {
+        try {
+            this.haveToken = true;
+            if (this.pendingAmount > 0) {
+                this.MSF.addDonation(this.pendingAmount);
+                this.pendingAmount = 0;
+            }
+            Thread.sleep(4000);
+            int nextReplica = (this.id + 1) % this.replicasCount;
+            System.out.println(this.id + ": Paso el token a replica " + nextReplica);
+            this.haveToken = false;
+            this.replicas.get(nextReplica).passToken();
+        } catch (Exception e) {
+            //TODO: handle exception
+        }
     }
 
     // Fin peticiones de server ---------------------------------------------------------------------------------------
